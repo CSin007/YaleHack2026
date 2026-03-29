@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Crowd Control AI</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0c12;color:#e2e8f0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+header{background:#11141f;border-bottom:1px solid #1e2235;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+header h1{font-size:16px;font-weight:600}
+.hbadge{font-size:10px;padding:2px 8px;border-radius:8px;background:#1e40af22;color:#60a5fa;border:1px solid #3b82f630}
+.hlive{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:12px;color:#64748b}
+.dot{width:7px;height:7px;border-radius:50%;background:#334155;flex-shrink:0}
+.dot.on{background:#22c55e;box-shadow:0 0 6px #22c55e90;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+.body{display:flex;flex:1;overflow:hidden}
+.sidebar{width:300px;flex-shrink:0;background:#11141f;border-right:1px solid #1e2235;display:flex;flex-direction:column;overflow:hidden}
+.sb-section{padding:14px 16px;border-bottom:1px solid #1e2235;flex-shrink:0}
+.sb-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin-bottom:10px}
+label{font-size:11px;color:#94a3b8;display:block;margin-bottom:3px;margin-top:8px}
+label:first-of-type{margin-top:0}
+input,select{width:100%;background:#0a0c12;border:1px solid #1e2235;border-radius:6px;color:#e2e8f0;padding:6px 9px;font-size:12px}
+input:focus,select:focus{outline:none;border-color:#3b82f6}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.btn{width:100%;padding:9px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn:active{opacity:.8}
+.btn-blue{background:#2563eb;color:#fff}
+.btn-red{background:#dc2626;color:#fff}
+.ring-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 16px 10px}
+.ring-svg{width:130px;height:130px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 16px;flex-shrink:0}
+.stat-box{background:#0a0c12;border:1px solid #1e2235;border-radius:8px;padding:9px 12px}
+.sv{font-size:20px;font-weight:700;line-height:1.1}
+.sl{font-size:10px;color:#475569;margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.sv.ok{color:#22c55e}.sv.warn{color:#f59e0b}.sv.danger{color:#ef4444}.sv.neutral{color:#94a3b8}
+.zone-bars{padding:10px 16px;flex-shrink:0;border-bottom:1px solid #1e2235}
+.zone-row{margin-bottom:8px}
+.zone-row:last-child{margin-bottom:0}
+.zone-label-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
+.zone-name{color:#94a3b8}
+.zone-val{font-weight:600}
+.zone-track{height:5px;background:#1e2235;border-radius:3px;overflow:hidden}
+.zone-fill{height:100%;border-radius:3px;transition-property:width,background-color;transition-duration:.5s,.5s;transition-timing-function:ease,ease}
+.event-feed-header{padding:10px 16px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:#475569;flex-shrink:0}
+.event-feed{flex:1;overflow-y:auto;padding:0 12px 12px;min-height:0}
+.event-item{display:flex;gap:8px;padding:8px 4px;border-bottom:1px solid #1e223540;align-items:flex-start;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.event-item:last-child{border-bottom:none}
+.ev-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
+.ev-body{flex:1}
+.ev-msg{font-size:12px;color:#e2e8f0;line-height:1.45}
+.ev-meta{font-size:10px;color:#475569;margin-top:2px;display:flex;gap:8px}
+.ev-up   .ev-icon{background:#ef444418;color:#ef4444}
+.ev-down .ev-icon{background:#22c55e18;color:#22c55e}
+.ev-warn .ev-icon{background:#f59e0b18;color:#f59e0b}
+.ev-info .ev-icon{background:#3b82f618;color:#3b82f6}
+.no-events{color:#334155;font-size:11px;text-align:center;padding:24px 0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.video-wrap{flex:1;background:#000;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+#main-canvas{display:block;max-width:100%;max-height:100%}
+.placeholder{color:#1e2235;text-align:center;pointer-events:none}
+.placeholder svg{display:block;margin:0 auto 10px;opacity:.3}
+.placeholder p{font-size:13px}
+.bottom-bar{background:#11141f;border-top:1px solid #1e2235;padding:10px 20px;display:flex;align-items:center;gap:20px;flex-shrink:0;flex-wrap:wrap}
+.bstat .bv{font-size:18px;font-weight:700}
+.bstat .bl{font-size:10px;color:#475569;text-transform:uppercase;letter-spacing:.05em}
+.delta{font-size:13px;font-weight:600;margin-left:4px}
+.delta.up{color:#ef4444}.delta.dn{color:#22c55e}.delta.eq{color:#64748b}
+.progress-wrap{flex:1;min-width:160px}
+.progress-label{display:flex;justify-content:space-between;font-size:10px;color:#475569;margin-bottom:4px}
+.progress-track{height:6px;background:#1e2235;border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition-property:width,background-color;transition-duration:.4s,.4s;transition-timing-function:ease,ease}
+.lat{font-size:10px;color:#334155;margin-left:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>Crowd Control AI</h1>
+  <span class="hbadge">Organizer — Real-time</span>
+  <div class="hlive"><span class="dot" id="live-dot"></span><span id="live-txt">Idle</span></div>
+</header>
+
+<div class="body">
+  <div class="sidebar">
+
+    <div class="sb-section">
+      <div class="sb-title">Source</div>
+      <label>Video file</label>
+      <input type="file" id="file-input" accept="video/*"/>
+      <label>Monitored area</label>
+      <div class="grid2">
+        <input type="number" id="area-val" value="50" min="1"/>
+        <select id="area-unit">
+          <option value="square_meters">m²</option>
+          <option value="square_feet">ft²</option>
+        </select>
+      </div>
+      <label>Alert density (people/m²)</label>
+      <input type="number" id="density-thresh" value="2.5" step="0.1" min="0.5"/>
+      <label>Send interval (ms)</label>
+      <input type="number" id="interval-ms" value="400" min="100" max="2000" step="100"/>
+      <button class="btn btn-blue" id="btn-start" onclick="startStream()">Start real-time analysis</button>
+      <button class="btn btn-red"  id="btn-stop"  onclick="stopStream()" style="display:none">Stop</button>
+    </div>
+
+    <!-- risk ring -->
+    <div class="sb-section">
+      <div class="sb-title">Risk assessment</div>
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="54" fill="none" stroke="#1e2235" stroke-width="11"/>
+          <circle id="ring-track" cx="65" cy="65" r="54" fill="none"
+            stroke="#22c55e" stroke-width="11" stroke-linecap="round"
+            stroke-dasharray="339.3" stroke-dashoffset="339.3"
+            transform="rotate(-90 65 65)"
+            style="transition-property:stroke-dashoffset,stroke;transition-duration:.5s,.5s;transition-timing-function:ease,ease"/>
+          <text id="ring-pct"   x="65" y="61" text-anchor="middle" font-size="26" font-weight="700" fill="#f1f5f9">0%</text>
+          <text id="ring-level" x="65" y="77" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">LOW</text>
+          <text id="ring-sub"   x="65" y="89" text-anchor="middle" font-size="8"  fill="#334155">waiting…</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- stats -->
+    <div class="stat-grid">
+      <div class="stat-box"><div class="sv neutral" id="s-people">—</div><div class="sl">People now</div></div>
+      <div class="stat-box"><div class="sv neutral" id="s-density">—</div><div class="sl">Density/m²</div></div>
+      <div class="stat-box"><div class="sv neutral" id="s-peak">—</div><div class="sl">Peak density</div></div>
+      <div class="stat-box"><div class="sv neutral" id="s-turb">—</div><div class="sl">Turbulence</div></div>
+    </div>
+
+    <!-- zone bars — driven by density_grid columns -->
+    <div class="zone-bars" id="zone-bars">
+      <div class="sb-title" style="margin-bottom:8px">Zone activity</div>
+      <!-- injected by JS once first grid arrives -->
+    </div>
+
+    <!-- event feed -->
+    <div class="event-feed-header">Live events</div>
+    <div class="event-feed" id="event-feed">
+      <div class="no-events" id="no-events">Events will appear here as the crowd moves</div>
+    </div>
+
+  </div>
+
+  <div class="main">
+    <div class="video-wrap">
+      <div class="placeholder" id="placeholder">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+          <rect x="2" y="7" width="15" height="10" rx="2"/><path d="M17 9l4-2v10l-4-2"/>
+        </svg>
+        <p>Select a video and click Start real-time analysis</p>
+      </div>
+      <canvas id="main-canvas" style="display:none"></canvas>
+    </div>
+
+    <div class="bottom-bar">
+      <div class="bstat">
+        <div class="bv" id="b-count">—<span class="delta eq" id="b-delta"></span></div>
+        <div class="bl">People in frame</div>
+      </div>
+      <div class="bstat">
+        <div class="bv ok" id="b-frames">0</div>
+        <div class="bl">Frames sent</div>
+      </div>
+      <div class="bstat">
+        <div class="bv" id="b-time">0:00</div>
+        <div class="bl">Video time</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Density pressure</span><span id="prog-label">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%;background:#22c55e"></div></div>
+      </div>
+      <div class="lat" id="lat"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const CIRC = 339.3;  // 2π × 54
+
+// ── state ──────────────────────────────────────────────────────────────────
+let ws = null, videoEl = null, sendTimer = null, rafId = null;
+let offscreen = null, offCtx = null;
+let lastResult = null;
+let lastCount = 0, peakDensity = 0, framesSent = 0, sentAt = 0;
+
+// Zone tracking — indexed by zone name, stores {heat, prevHeat, state}
+// state: 'low' | 'moderate' | 'high' | 'critical'
+const ZONE_NAMES = ['NW','N','NE','SW','S','SE'];  // 2 rows × 3 cols (flattened from 4×6 grid averaged)
+let zoneState = {};
+ZONE_NAMES.forEach(n => { zoneState[n] = { heat: 0, prev: 0, state: 'low', smoothed: 0 }; });
+
+// Map 4-row × 6-col grid → 2-row × 3-col named zones
+function gridToNamedZones(grid) {
+  // grid is 4 rows × 6 cols
+  // collapse to 2×3 by averaging quadrants
+  const zones = {};
+  const rowGroups = [[0,1],[2,3]];       // top half, bottom half
+  const colGroups = [[0,1],[2,3],[4,5]]; // left, centre, right
+  const names = [['NW','N','NE'],['SW','S','SE']];
+  rowGroups.forEach((rows, ri) => {
+    colGroups.forEach((cols, ci) => {
+      let sum = 0, cnt = 0;
+      rows.forEach(r => cols.forEach(c => {
+        if (grid[r] && grid[r][c] !== undefined) { sum += grid[r][c]; cnt++; }
+      }));
+      zones[names[ri][ci]] = cnt ? sum / cnt : 0;
+    });
+  });
+  return zones;
+}
+
+const ZONE_LABELS = { NW:'West wing', N:'North centre', NE:'East wing', SW:'SW corner', S:'South centre', SE:'SE corner' };
+const ZONE_THRESH = { low: 0.02, moderate: 0.06, high: 0.14, critical: 0.25 };
+
+function classifyHeat(h) {
+  if (h >= ZONE_THRESH.critical) return 'critical';
+  if (h >= ZONE_THRESH.high)     return 'high';
+  if (h >= ZONE_THRESH.moderate) return 'moderate';
+  return 'low';
+}
+
+function zoneColor(state) {
+  return { low:'#22c55e', moderate:'#3b82f6', high:'#f59e0b', critical:'#ef4444' }[state] || '#64748b';
+}
+
+// ── zone bar init ──────────────────────────────────────────────────────────
+function initZoneBars() {
+  const container = document.getElementById('zone-bars');
+  // clear old rows except title
+  Array.from(container.querySelectorAll('.zone-row')).forEach(e => e.remove());
+  ZONE_NAMES.forEach(name => {
+    const row = document.createElement('div');
+    row.className = 'zone-row';
+    row.id = `zrow-${name}`;
+    row.innerHTML = `
+      <div class="zone-label-row">
+        <span class="zone-name">${ZONE_LABELS[name]}</span>
+        <span class="zone-val" id="zval-${name}" style="color:#22c55e">0%</span>
+      </div>
+      <div class="zone-track"><div class="zone-fill" id="zfill-${name}" style="width:0%;background:#22c55e"></div></div>`;
+    container.appendChild(row);
+  });
+}
+
+// ── update zones from density grid ────────────────────────────────────────
+function updateZones(grid, peopleCount, videoTime) {
+  const named = gridToNamedZones(grid);
+
+  ZONE_NAMES.forEach(name => {
+    const raw = named[name] || 0;
+    const z   = zoneState[name];
+    const prevSmoothed = z.smoothed;
+
+    // exponential moving average for smooth transitions
+    z.smoothed = z.smoothed * 0.6 + raw * 0.4;
+    z.prev     = z.heat;
+    z.heat     = z.smoothed;
+
+    const newState = classifyHeat(z.heat);
+    const col      = zoneColor(newState);
+    const pct      = Math.min(z.heat / ZONE_THRESH.critical * 100, 100);
+
+    // update bar
+    const fill = document.getElementById(`zfill-${name}`);
+    const val  = document.getElementById(`zval-${name}`);
+    if (fill) { fill.style.width = pct.toFixed(1) + '%'; fill.style.backgroundColor = col; }
+    if (val)  { val.textContent = pct.toFixed(0) + '%'; val.style.color = col; }
+
+    // ── generate event if state changed ───────────────────────────
+    const oldState = z.state;
+    if (newState !== oldState) {
+      z.state = newState;
+      fireZoneEvent(name, oldState, newState, z.heat, pct, peopleCount, videoTime);
+    }
+    // ── generate delta event (significant movement without state change) ──
+    else {
+      const delta = z.smoothed - prevSmoothed;
+      const absDelta = Math.abs(delta);
+      // only fire if meaningful change and not too frequent
+      if (absDelta > 0.015 && newState !== 'low') {
+        const dir = delta > 0 ? 'up' : 'down';
+        fireDeltaEvent(name, dir, delta, z.heat, pct, peopleCount, videoTime);
+      }
+    }
+  });
+}
+
+// throttle: don't fire same zone event more than once per 4 seconds
+const lastEventTime = {};
+function shouldFire(key, videoTime, cooldown = 4) {
+  if ((videoTime - (lastEventTime[key] || -99)) < cooldown) return false;
+  lastEventTime[key] = videoTime;
+  return true;
+}
+
+function fireZoneEvent(name, oldState, newState, heat, pct, count, t) {
+  if (!shouldFire(`state-${name}`, t, 5)) return;
+  const label = ZONE_LABELS[name];
+
+  let type, icon, msg;
+  const transitions = {
+    'low→moderate':    ['info',  'ℹ', `${label} starting to fill — ${count} people detected`],
+    'moderate→high':   ['warn',  '⬆', `${label} getting busier — crowd pressure rising`],
+    'high→critical':   ['up',    '⚠', `${label} reaching critical density — consider redirecting`],
+    'critical→high':   ['down',  '↓', `${label} easing slightly — still high, monitor closely`],
+    'high→moderate':   ['down',  '↓', `${label} clearing — crowd dispersing`],
+    'moderate→low':    ['down',  '✓', `${label} now clear — density back to safe levels`],
+    'low→high':        ['warn',  '⬆', `${label} sudden crowd surge detected`],
+    'low→critical':    ['up',    '⚠', `${label} rapid critical surge — act immediately`],
+    'critical→moderate':['down', '↓', `${label} significant crowd relief detected`],
+    'critical→low':    ['down',  '✓', `${label} cleared from critical — good`],
+    'high→low':        ['down',  '✓', `${label} cleared quickly`],
+  };
+
+  const key = `${oldState}→${newState}`;
+  [type, icon, msg] = transitions[key] || ['info', 'ℹ', `${label} changed from ${oldState} to ${newState}`];
+  pushEvent(type, icon, msg, pct, t);
+}
+
+function fireDeltaEvent(name, dir, delta, heat, pct, count, t) {
+  // cooldown per zone per direction
+  if (!shouldFire(`delta-${name}-${dir}`, t, 8)) return;
+  const label = ZONE_LABELS[name];
+  const mag   = Math.abs(delta);
+
+  let type, icon, msg;
+  if (dir === 'up') {
+    if (mag > 0.04) {
+      type = 'warn'; icon = '⬆';
+      msg = `${label} adding people fast — ${count} total in frame`;
+    } else {
+      type = 'info'; icon = '↑';
+      msg = `${label} slowly getting busier`;
+    }
+  } else {
+    if (mag > 0.04) {
+      type = 'down'; icon = '⬇';
+      msg = `${label} clearing quickly — people moving out`;
+    } else {
+      type = 'down'; icon = '↓';
+      msg = `${label} gradually freeing up`;
+    }
+  }
+  pushEvent(type, icon, msg, pct, t);
+}
+
+// ── push to event feed ─────────────────────────────────────────────────────
+function pushEvent(type, icon, msg, pct, videoTime) {
+  const feed = document.getElementById('event-feed');
+  const na   = document.getElementById('no-events');
+  if (na) na.remove();
+
+  const el = document.createElement('div');
+  el.className = `event-item ev-${type}`;
+  el.innerHTML = `
+    <div class="ev-icon">${icon}</div>
+    <div class="ev-body">
+      <div class="ev-msg">${msg}</div>
+      <div class="ev-meta">
+        <span>${formatTime(videoTime)}</span>
+        <span>${pct.toFixed(0)}% zone density</span>
+      </div>
+    </div>`;
+  feed.prepend(el);
+  // keep max 60 events
+  while (feed.children.length > 60) feed.removeChild(feed.lastChild);
+}
+
+// ── WebSocket + video ──────────────────────────────────────────────────────
+function startStream() {
+  const fi = document.getElementById('file-input');
+  if (!fi.files.length) { alert('Select a video file first.'); return; }
+  stopStream();
+
+  peakDensity = 0; lastCount = 0; framesSent = 0; lastResult = null;
+  ZONE_NAMES.forEach(n => { zoneState[n] = { heat:0, prev:0, state:'low', smoothed:0 }; });
+  Object.keys(lastEventTime).forEach(k => delete lastEventTime[k]);
+  document.getElementById('event-feed').innerHTML = '<div class="no-events" id="no-events">Events will appear here as the crowd moves</div>';
+
+  initZoneBars();
+  setLive('Connecting…', false);
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-stop').style.display  = 'block';
+
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const host  = location.hostname + (location.port ? ':' + location.port : '');
+  ws = new WebSocket(`${proto}://${host}/ws/realtime-analysis`);
+  ws.binaryType = 'arraybuffer';
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({
+      area_value:              parseFloat(document.getElementById('area-val').value),
+      area_unit:               document.getElementById('area-unit').value,
+      alert_density_threshold: parseFloat(document.getElementById('density-thresh').value),
+      zone_x:0, zone_y:0, zone_width:1, zone_height:1,
+    }));
+  };
+
+  ws.onmessage = (evt) => {
+    const msg = JSON.parse(evt.data);
+    if (msg.type === 'session_ready') {
+      setLive('Live', true);
+      loadAndPlayVideo(fi.files[0]);
+    } else if (msg.type === 'analysis') {
+      document.getElementById('lat').textContent = `${Date.now() - sentAt}ms`;
+      lastResult = msg.payload;
+    } else if (msg.type === 'error') {
+      console.error('Server error:', msg.message, msg.detail);
+      alert('Server error: ' + msg.message);
+      stopStream();
+    }
+  };
+
+  ws.onerror = () => {
+    fetch('/health').then(r => r.json())
+      .then(() => alert('WebSocket failed. Server is up — check console for details.'))
+      .catch(() => alert('Server unreachable. Run: uvicorn app.main:app --reload'));
+    resetBtns(); setLive('Error', false);
+  };
+  ws.onclose = (e) => {
+    if (document.getElementById('btn-stop').style.display !== 'none')
+      setLive(`Closed (${e.code})`, false);
+  };
+}
+
+function loadAndPlayVideo(file) {
+  videoEl = document.createElement('video');
+  videoEl.src = URL.createObjectURL(file);
+  videoEl.muted = true; videoEl.playsInline = true;
+
+  videoEl.addEventListener('loadedmetadata', () => {
+    const canvas  = document.getElementById('main-canvas');
+    canvas.width  = videoEl.videoWidth;
+    canvas.height = videoEl.videoHeight;
+    offscreen = document.createElement('canvas');
+    offscreen.width  = Math.min(videoEl.videoWidth,  640);
+    offscreen.height = Math.min(videoEl.videoHeight, 480);
+    offCtx = offscreen.getContext('2d');
+    document.getElementById('placeholder').style.display = 'none';
+    canvas.style.display = 'block';
+    videoEl.play();
+
+    const ms = parseInt(document.getElementById('interval-ms').value) || 400;
+    sendTimer = setInterval(() => {
+      if (!ws || ws.readyState !== WebSocket.OPEN || videoEl.paused || videoEl.ended) return;
+      offCtx.drawImage(videoEl, 0, 0, offscreen.width, offscreen.height);
+      offscreen.toBlob(blob => {
+        if (!blob || !ws || ws.readyState !== WebSocket.OPEN) return;
+        blob.arrayBuffer().then(buf => { sentAt = Date.now(); ws.send(buf); framesSent++; });
+      }, 'image/jpeg', 0.75);
+    }, ms);
+
+    renderLoop();
+  });
+
+  videoEl.addEventListener('ended', () => { setLive('Done', false); stopStream(); });
+}
+
+// ── render loop ────────────────────────────────────────────────────────────
+function renderLoop() {
+  if (!videoEl || videoEl.ended) return;
+
+  const canvas = document.getElementById('main-canvas');
+  const ctx    = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  ctx.drawImage(videoEl, 0, 0, W, H);
+
+  if (lastResult) {
+    const fm   = lastResult.frame_metric;
+    const risk = lastResult.risk_assessment;
+    const hb64 = lastResult.heatmap_b64;
+    const grid = lastResult.density_grid;
+
+    const count   = fm.people_count;
+    const density = fm.density_per_square_meter;
+    if (density > peakDensity) peakDensity = density;
+
+    // ── heatmap overlay ───────────────────────────────────────────
+    if (hb64) {
+      if (!window._hmImg) window._hmImg = new Image();
+      const img = window._hmImg;
+      const src = 'data:image/jpeg;base64,' + hb64;
+      if (img.src !== src) img.src = src;
+      if (img.complete && img.naturalWidth > 0) {
+        ctx.globalAlpha = 0.45;
+        ctx.drawImage(img, 0, 0, W, H);
+        ctx.globalAlpha = 1.0;
+      }
+    }
+
+    // ── density grid cell overlay (fine-grained colour zones) ────
+    if (grid && grid.length) {
+      const rows = grid.length, cols = grid[0].length;
+      const cw = W / cols, ch = H / rows;
+      grid.forEach((row, r) => {
+        row.forEach((val, c) => {
+          if (val < 0.03) return;
+          const hue   = Math.max(0, 120 - val * 900);
+          const alpha = Math.min(val * 1.8, 0.22);
+          ctx.fillStyle = `hsla(${hue},100%,55%,${alpha})`;
+          ctx.fillRect(c * cw, r * ch, cw, ch);
+        });
+      });
+    }
+
+    // ── people count badge ────────────────────────────────────────
+    const col = fm.alert_triggered ? '#ef4444' : density >= 2.5 ? '#f59e0b' : '#22c55e';
+    ctx.fillStyle = 'rgba(0,0,0,0.72)';
+    roundRect(ctx, 12, 12, 215, 52, 8); ctx.fill();
+    ctx.fillStyle = col;
+    ctx.font = 'bold 30px system-ui';
+    ctx.fillText(count, 20, 50);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px system-ui';
+    ctx.fillText('people in frame', 64, 34);
+    ctx.fillStyle = col;
+    ctx.font = 'bold 11px system-ui';
+    ctx.fillText(`${density.toFixed(2)} p/m²`, 64, 54);
+
+    // ── delta ─────────────────────────────────────────────────────
+    const delta = count - lastCount;
+    if (delta !== 0) {
+      ctx.fillStyle = delta > 0 ? '#ef4444' : '#22c55e';
+      ctx.font = 'bold 13px system-ui';
+      ctx.fillText((delta > 0 ? '▲ +' : '▼ ') + delta, 20, 72);
+    }
+
+    // ── zone label overlays on video ──────────────────────────────
+    if (grid && grid.length) {
+      const named = gridToNamedZones(grid);
+      const positions = {
+        NW:[0.1, 0.15], N:[0.5, 0.08], NE:[0.88, 0.15],
+        SW:[0.1, 0.82], S:[0.5, 0.90], SE:[0.88, 0.82],
+      };
+      ctx.font = 'bold 11px system-ui';
+      ctx.textAlign = 'center';
+      ZONE_NAMES.forEach(name => {
+        const h = named[name] || 0;
+        if (h < 0.03) return;
+        const [fx, fy] = positions[name];
+        const state    = classifyHeat(h);
+        const zcol     = zoneColor(state);
+        const pct      = Math.min(h / ZONE_THRESH.critical * 100, 100);
+        ctx.fillStyle  = 'rgba(0,0,0,0.55)';
+        roundRect(ctx, fx*W - 42, fy*H - 14, 84, 22, 5); ctx.fill();
+        ctx.fillStyle  = zcol;
+        ctx.fillText(`${ZONE_LABELS[name].split(' ')[0]} ${pct.toFixed(0)}%`, fx*W, fy*H + 2);
+      });
+      ctx.textAlign = 'left';
+    }
+
+    // ── alert banner ──────────────────────────────────────────────
+    if (fm.alert_triggered) {
+      const flash = Math.sin(Date.now() / 180) > 0;
+      ctx.fillStyle = flash ? 'rgba(239,68,68,0.88)' : 'rgba(180,20,20,0.72)';
+      ctx.fillRect(0, H - 40, W, 40);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚠  DENSITY THRESHOLD BREACHED — TAKE IMMEDIATE ACTION', W/2, H - 14);
+      ctx.textAlign = 'left';
+    }
+
+    // ── timestamp ─────────────────────────────────────────────────
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    roundRect(ctx, W-110, 12, 98, 22, 5); ctx.fill();
+    ctx.fillStyle = '#64748b'; ctx.font = '11px system-ui';
+    ctx.fillText(`${formatTime(videoEl.currentTime)}  f${framesSent}`, W-104, 27);
+
+    // ── sidebar updates ───────────────────────────────────────────
+    setStat('s-people',  count,              10,  20);
+    setStat('s-density', density.toFixed(2), 2.5, 4.0);
+    setStat('s-peak',    peakDensity.toFixed(2), 2.5, 4.0);
+    setStat('s-turb',    fm.motion_turbulence.toFixed(2), 0.5, 1.0);
+    updateRing(risk.score, risk.level);
+    updateBottomBar(count, density);
+
+    // ── zone events from grid — the core of algorithm-driven events ─
+    if (grid) updateZones(grid, count, videoEl.currentTime);
+
+    lastCount = count;
+  }
+
+  document.getElementById('b-time').textContent = formatTime(videoEl?.currentTime || 0);
+  document.getElementById('b-frames').textContent = framesSent;
+  rafId = requestAnimationFrame(renderLoop);
+}
+
+// ── test agent ─────────────────────────────────────────────────────────────
+async function testAgent() {
+  const btn = event.target;
+  btn.textContent = 'Calling agent…';
+  btn.disabled = true;
+  try {
+    const res  = await fetch('/api/test-agent', { method: 'POST' });
+    const data = await res.json();
+    if (data.error) { alert('Agent error: ' + data.error); return; }
+    renderAgentActions(data.actions, data.risk, data.score);
+  } catch(e) {
+    alert('Test failed: ' + e);
+  } finally {
+    btn.textContent = 'Test agent (simulate high risk)';
+    btn.disabled = false;
+  }
+}
+
+// ── agent actions renderer ─────────────────────────────────────────────────
+const TOOL_LABELS = {
+  send_gate_instruction:    '🚧 Gate instruction',
+  dispatch_staff:           '👮 Dispatch staff',
+  broadcast_pa_announcement:'📢 PA announcement',
+  open_overflow_area:       '🔓 Open overflow',
+  alert_emergency_services: '🚨 Emergency alert',
+  agent_message:            '🤖 Agent assessment',
+};
+
+function renderAgentActions(actions, riskLevel, score) {
+  if (!actions || !actions.length) return;
+
+  const section = document.getElementById('agent-section');
+  const list    = document.getElementById('agent-actions-list');
+  const badge   = document.getElementById('agent-risk-badge');
+  const cols    = {low:'#22c55e',moderate:'#3b82f6',high:'#f59e0b',critical:'#ef4444'};
+  const col     = cols[riskLevel] || '#64748b';
+
+  section.style.display = 'block';
+  badge.textContent      = `${riskLevel.toUpperCase()} · ${Math.round(score*100)}%`;
+  badge.style.background = col + '22';
+  badge.style.color      = col;
+  badge.style.border     = `1px solid ${col}44`;
+
+  list.innerHTML = '';
+
+  actions.forEach(action => {
+    const el   = document.createElement('div');
+    const tool = action.tool;
+    const inp  = action.input || {};
+    el.className = `agent-action aa-${tool}`;
+
+    const label   = TOOL_LABELS[tool] || tool;
+    const urgency = inp.urgency || '';
+    const urgCls  = urgency ? `urgency-${urgency}` : '';
+
+    let content = '';
+    if (tool === 'send_gate_instruction') {
+      content = `<strong>${inp.gate}</strong> — ${inp.message}`;
+    } else if (tool === 'dispatch_staff') {
+      content = `Send <strong>${inp.count} ${inp.staff_type}</strong> to ${inp.zone}<br><span style="opacity:.7">${inp.instruction}</span>`;
+    } else if (tool === 'broadcast_pa_announcement') {
+      const zones = (inp.zones || []).join(', ');
+      content = `<em>"${inp.message}"</em><br><span style="opacity:.6">→ ${zones}</span>`;
+    } else if (tool === 'open_overflow_area') {
+      content = `Open <strong>${inp.area}</strong> to relieve ${inp.from_zone}<br><span style="opacity:.7">${inp.instruction}</span>`;
+    } else if (tool === 'alert_emergency_services') {
+      content = `<strong style="color:#ef4444">${inp.situation}</strong><br>Location: ${inp.location} · ${inp.density?.toFixed(1)} p/m²`;
+    } else if (tool === 'agent_message') {
+      content = inp.message;
+    }
+
+    el.innerHTML = `
+      <div class="aa-tool-label">${label}${urgency ? ` · <span class="${urgCls}">${urgency.toUpperCase()}</span>` : ''}</div>
+      <div class="aa-content">${content}</div>
+      <div class="aa-meta">${new Date().toLocaleTimeString()}</div>`;
+    list.appendChild(el);
+
+    // also push to event feed
+    const evType = {
+      send_gate_instruction:'warn', dispatch_staff:'warn',
+      broadcast_pa_announcement:'info', open_overflow_area:'down',
+      alert_emergency_services:'up', agent_message:'info',
+    }[tool] || 'info';
+    const evIcon = {
+      send_gate_instruction:'🚧', dispatch_staff:'👮',
+      broadcast_pa_announcement:'📢', open_overflow_area:'🔓',
+      alert_emergency_services:'🚨', agent_message:'🤖',
+    }[tool] || 'ℹ';
+    pushEventRaw(evType, evIcon, `[AI] ${label}: ${inp.message || inp.instruction || inp.situation || ''}`,
+      Math.round(score*100), videoEl?.currentTime || 0);
+  });
+}
+
+function pushEventRaw(type, icon, msg, pct, t) {
+  const feed = document.getElementById('event-feed');
+  const na   = document.getElementById('no-events');
+  if (na) na.remove();
+  const el = document.createElement('div');
+  el.className = `event-item ev-${type}`;
+  el.innerHTML = `
+    <div class="ev-icon">${icon}</div>
+    <div class="ev-body">
+      <div class="ev-msg">${msg}</div>
+      <div class="ev-meta"><span>${formatTime(t)}</span><span>${pct}% risk</span></div>
+    </div>`;
+  feed.prepend(el);
+  while (feed.children.length > 60) feed.removeChild(feed.lastChild);
+}
+
+// ── agent actions renderer ─────────────────────────────────────────────────
+function stopStream() {
+  if (sendTimer) { clearInterval(sendTimer); sendTimer = null; }
+  if (rafId)     { cancelAnimationFrame(rafId); rafId = null; }
+  if (ws)        { ws.close(); ws = null; }
+  if (videoEl)   { videoEl.pause(); URL.revokeObjectURL(videoEl.src); videoEl = null; }
+  resetBtns(); setLive('Idle', false);
+}
+
+function resetBtns() {
+  document.getElementById('btn-start').style.display = 'block';
+  document.getElementById('btn-stop').style.display  = 'none';
+}
+
+// ── ring ───────────────────────────────────────────────────────────────────
+function updateRing(score, level) {
+  const cols = {low:'#22c55e',moderate:'#3b82f6',high:'#f59e0b',critical:'#ef4444'};
+  const col  = cols[level] || '#64748b';
+  document.getElementById('ring-track').setAttribute('stroke-dashoffset', (CIRC*(1-score)).toFixed(1));
+  document.getElementById('ring-track').setAttribute('stroke', col);
+  document.getElementById('ring-pct').textContent   = Math.round(score*100)+'%';
+  document.getElementById('ring-pct').setAttribute('fill', col);
+  document.getElementById('ring-level').textContent = level.toUpperCase();
+  document.getElementById('ring-level').setAttribute('fill', col);
+  document.getElementById('ring-sub').textContent   =
+    score>=.8?'CRITICAL — act now':score>=.52?'High — monitor':score>=.28?'Moderate — watch':'Within safe limits';
+}
+
+function setStat(id, val, w, d) {
+  const el = document.getElementById(id);
+  el.textContent = val;
+  const n = parseFloat(val);
+  el.className = 'sv '+(n>=d?'danger':n>=w?'warn':'ok');
+}
+
+function updateBottomBar(count, density) {
+  const delta = count - lastCount;
+  document.getElementById('b-count').childNodes[0].nodeValue = count;
+  const dEl = document.getElementById('b-delta');
+  dEl.textContent = delta===0?'':(delta>0?' ▲+'+delta:' ▼'+delta);
+  dEl.className   = 'delta '+(delta>0?'up':delta<0?'dn':'eq');
+  const pct = Math.min(density/4.0*100,100);
+  const col = density>=4.0?'#ef4444':density>=2.5?'#f59e0b':'#22c55e';
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-fill').style.backgroundColor = col;
+  document.getElementById('prog-label').textContent = pct.toFixed(0)+'%';
+}
+
+// ── utils ──────────────────────────────────────────────────────────────────
+function formatTime(s) {
+  const m=Math.floor(s/60),sec=Math.floor(s%60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+}
+function setLive(txt,on){
+  document.getElementById('live-txt').textContent=txt;
+  document.getElementById('live-dot').className='dot'+(on?' on':'');
+}
+</script>
+</body>
+</html>
