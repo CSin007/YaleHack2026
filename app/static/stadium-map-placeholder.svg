@@ -1,0 +1,14 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 900" role="img" aria-label="Stadium placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2f5f9"/>
+      <stop offset="100%" stop-color="#e5ebf3"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="900" fill="url(#bg)"/>
+  <ellipse cx="600" cy="450" rx="490" ry="340" fill="#d7dee8"/>
+  <ellipse cx="600" cy="450" rx="390" ry="260" fill="#eef2f7"/>
+  <ellipse cx="600" cy="450" rx="270" ry="180" fill="#c9d3e1"/>
+  <ellipse cx="600" cy="450" rx="210" ry="125" fill="#b6c4d7"/>
+  <text x="600" y="455" text-anchor="middle" font-size="34" font-family="Arial, sans-serif" fill="#5b6f8a">Drop stadium-map.png in app/static</text>
+</svg>
