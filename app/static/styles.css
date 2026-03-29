@@ -1,0 +1,360 @@
+:root {
+  --bg: #f4efe7;
+  --panel: rgba(255, 251, 246, 0.86);
+  --ink: #1d1a17;
+  --muted: #645b52;
+  --line: rgba(59, 47, 38, 0.12);
+  --accent: #b24a2e;
+  --accent-strong: #8f2e15;
+  --shadow: 0 18px 45px rgba(73, 53, 38, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top right, rgba(178, 74, 46, 0.18), transparent 28%),
+    linear-gradient(180deg, #fbf7f1 0%, var(--bg) 100%);
+}
+
+.page {
+  width: min(1100px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 3rem 0 4rem;
+}
+
+.hero {
+  padding: 1rem 0 2rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  margin-bottom: 0.5rem;
+}
+
+h1,
+h2 {
+  margin: 0;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 4vw, 4.5rem);
+  max-width: 14ch;
+  line-height: 0.97;
+}
+
+h2 {
+  margin: 1.4rem 0 0.9rem;
+  font-size: 1.1rem;
+}
+
+.lede {
+  max-width: 65ch;
+  color: var(--muted);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 1.4rem;
+  margin-top: 1.2rem;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(12px);
+}
+
+form,
+.results {
+  display: grid;
+  gap: 1rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+label {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.96rem;
+}
+
+input,
+select,
+button,
+pre {
+  font: inherit;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid rgba(80, 63, 51, 0.18);
+  border-radius: 14px;
+  padding: 0.8rem 0.95rem;
+  background: #fffdfa;
+}
+
+button {
+  justify-self: start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1.3rem;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-strong) 100%);
+  color: white;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #e6ddd2;
+  color: var(--ink);
+}
+
+#status {
+  font-size: 1rem;
+  color: var(--accent-strong);
+}
+
+pre {
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  border-radius: 18px;
+  background: #221d19;
+  color: #f8f3ea;
+  min-height: 220px;
+}
+
+.live-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+}
+
+.live-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.live-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.live-stage {
+  position: relative;
+  align-self: start;
+  aspect-ratio: 16 / 9;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #090b10;
+  border: 1px solid var(--line);
+}
+
+#live-preview,
+#overlay-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #090b10;
+}
+
+#overlay-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.live-status {
+  display: grid;
+  gap: 0.75rem;
+}
+
+#live-status {
+  color: var(--accent-strong);
+  font-size: 1rem;
+}
+
+
+.live-chips {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  z-index: 2;
+}
+
+.chip {
+  min-width: 132px;
+  padding: 0.75rem 0.9rem;
+  border-radius: 18px;
+  color: #f7f1e8;
+  background: rgba(10, 12, 16, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.chip-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.chip strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.4rem;
+}
+
+.risk-orb {
+  --orb-color: hsl(120, 80%, 52%);
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  padding: 10px;
+  background:
+    radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.55), transparent 25%),
+    radial-gradient(circle, color-mix(in srgb, var(--orb-color) 72%, black) 0%, rgba(5, 8, 12, 0.95) 72%);
+  box-shadow:
+    0 0 32px color-mix(in srgb, var(--orb-color) 45%, transparent),
+    inset 0 0 24px rgba(255, 255, 255, 0.12);
+  z-index: 2;
+}
+
+.risk-orb-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 0.15rem;
+  color: #f7f1e8;
+  background: rgba(6, 9, 14, 0.74);
+  text-align: center;
+}
+
+.risk-orb-inner span {
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.risk-orb-inner small {
+  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+}
+
+.signal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.signal-card {
+  padding: 1rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255, 250, 244, 0.92), rgba(236, 225, 212, 0.72));
+  border: 1px solid rgba(59, 47, 38, 0.1);
+}
+
+.signal-card span {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+}
+
+.signal-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 1.25rem;
+}
+
+.alert-strip {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  color: #f8f2ea;
+  background: linear-gradient(135deg, #2f6f2f, #204c20);
+}
+
+.alert-strip[data-level="moderate"] {
+  background: linear-gradient(135deg, #9b7a1d, #744f10);
+}
+
+.alert-strip[data-level="high"],
+.alert-strip[data-level="alert"] {
+  background: linear-gradient(135deg, #9a3d16, #73230b);
+}
+
+.alert-strip[data-level="critical"] {
+  background: linear-gradient(135deg, #931320, #5d0711);
+}
+
+.recommendations {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  background: rgba(255, 252, 247, 0.72);
+  border: 1px solid rgba(59, 47, 38, 0.1);
+}
+
+.recommendations h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.recommendations ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+@media (max-width: 720px) {
+  .page {
+    width: min(100% - 1rem, 1100px);
+    padding-top: 1.5rem;
+  }
+
+  h1 {
+    max-width: 100%;
+  }
+
+  .live-header,
+  .live-grid {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+
+  .signal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-orb {
+    width: 88px;
+    height: 88px;
+  }
+}

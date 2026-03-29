@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CrowdShield | Attendee</title>
+  <title>Hotspot | Attendee</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -18,45 +18,71 @@
     </div>
     <div class="header-right">
       <div class="status-pill" id="phaseLabel">Initializing</div>
-      <a href="/" class="link-btn">Switch Role</a>
+      <a href="/organizer" class="link-btn org-back-btn">? Organizer View</a>
     </div>
   </header>
 
-  <!-- Dynamic status banner -->
   <div class="status-banner normal" id="statusBanner">
     <span id="bannerText">Live safety monitoring active</span>
     <span class="countdown-inline" id="countdownTimer">03:00</span>
   </div>
 
-  <main class="attendee-new-layout">
+  <main class="attendee-new-layout attendee-report-only">
+    <section class="panel report-section attendee-report-top">
+      <h2>Report Issue to Organizer</h2>
+      <p class="sub">Tap an issue type or describe details below. Your seat context is included.</p>
 
-    <!-- Left col: video + notification card -->
-    <div class="attendee-left">
-      <!-- Video placeholder -->
-      <section class="panel video-panel">
-        <div class="panel-head-row">
-          <h2>Safety Broadcast</h2>
-          <span class="live-dot">LIVE</span>
-        </div>
-        <div class="video-placeholder" id="videoPlaceholder">
-          <div class="video-overlay">
-            <div class="play-btn-wrap">
-              <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
-                <circle cx="27" cy="27" r="26" stroke="white" stroke-width="2" fill="rgba(0,0,0,0.35)"/>
-                <polygon points="22,18 38,27 22,36" fill="white"/>
-              </svg>
-              <p>Safety video will play during alerts</p>
-            </div>
-            <div class="video-badge" id="videoBadge">Standby</div>
-          </div>
-        </div>
-      </section>
+      <div class="issue-chip-row">
+        <button type="button" class="issue-chip active" data-issue="Crowd surge near aisle" data-severity="high">Crowd Surge</button>
+        <button type="button" class="issue-chip" data-issue="Someone fell in my row" data-severity="critical">Someone Fell</button>
+        <button type="button" class="issue-chip" data-issue="Fight started near seats" data-severity="high">Fight</button>
+        <button type="button" class="issue-chip" data-issue="Exit path is blocked" data-severity="critical">Blocked Exit</button>
+        <button type="button" class="issue-chip" data-issue="Medical issue in this section" data-severity="critical">Medical</button>
+        <button type="button" class="issue-chip" data-issue="Suspicious activity nearby" data-severity="high">Suspicious</button>
+      </div>
 
-      <!-- Notification card -->
+      <form id="alertForm" class="alert-form">
+        <div class="form-row">
+          <label>
+            Your Seat
+            <input id="seatInput" name="seat" value="C14" maxlength="8" placeholder="e.g. C14" required />
+          </label>
+          <label>
+            Severity
+            <select id="severityInput" name="severity">
+              <option value="medium">Medium</option>
+              <option value="high" selected>High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          What's happening?
+          <input id="messageInput" name="message" value="Crowd surge near aisle" maxlength="120" placeholder="Describe the issue" required />
+        </label>
+
+        <label>
+          Note to Organizer <span class="optional">(optional)</span>
+          <textarea id="noteInput" name="note" maxlength="200" rows="2" placeholder="Extra details, injuries, number of people affected..."></textarea>
+        </label>
+
+        <button type="submit" class="send-btn" id="sendBtn">Send Alert Now</button>
+      </form>
+
+      <div id="sendStatus" class="send-status hidden"></div>
+
+      <div id="myReports" class="my-reports hidden">
+        <h3>Your Recent Reports</h3>
+        <ul id="myReportsList"></ul>
+      </div>
+    </section>
+
+    <section class="attendee-bottom-grid">
       <section class="panel notif-panel">
         <div class="phone-top-bar">
-          <span class="phone-app-icon">🛡</span>
-          <span class="phone-app-name">CrowdShield Alert</span>
+          <span class="phone-app-icon">??</span>
+          <span class="phone-app-name">Hotspot Guidance</span>
           <span class="phone-time" id="phoneTime"></span>
         </div>
         <div class="phone" id="phoneCard">
@@ -64,6 +90,7 @@
           <div class="phone-body" id="attendeeBody"></div>
           <div class="phone-dir" id="attendeeDirection"></div>
         </div>
+
         <div class="route-row">
           <div class="route-status" id="routeStatus">Safe route available</div>
           <div class="route-mini">
@@ -87,73 +114,27 @@
           </div>
         </div>
       </section>
-    </div>
 
-    <!-- Right col: report form -->
-    <div class="attendee-right">
-      <section class="panel report-section">
-        <h2>Report Issue to Organizer</h2>
-        <p class="sub">Tap an issue type or describe in detail below. Your location is shared automatically.</p>
-
-        <div class="issue-chip-row">
-          <button type="button" class="issue-chip active" data-issue="Crowd surge near aisle" data-severity="high">Crowd Surge</button>
-          <button type="button" class="issue-chip" data-issue="Someone fell in my row" data-severity="critical">Someone Fell</button>
-          <button type="button" class="issue-chip" data-issue="Fight started near seats" data-severity="high">Fight</button>
-          <button type="button" class="issue-chip" data-issue="Exit path is blocked" data-severity="critical">Blocked Exit</button>
-          <button type="button" class="issue-chip" data-issue="Medical issue in this section" data-severity="critical">Medical</button>
-          <button type="button" class="issue-chip" data-issue="Suspicious activity nearby" data-severity="high">Suspicious</button>
+      <section class="panel user-control-panel">
+        <h2>Your Safety Controls</h2>
+        <div class="quick-action-row">
+          <button type="button" class="issue-chip" id="btnNeedAssist">Need Immediate Assistance</button>
+          <button type="button" class="issue-chip" id="btnImSafe">I Am Safe</button>
         </div>
-
-        <form id="alertForm" class="alert-form">
-          <div class="form-row">
-            <label>
-              Your Seat
-              <input id="seatInput" name="seat" value="C14" maxlength="8" placeholder="e.g. C14" required />
-            </label>
-            <label>
-              Severity
-              <select id="severityInput" name="severity">
-                <option value="medium">Medium</option>
-                <option value="high" selected>High</option>
-                <option value="critical">Critical</option>
-              </select>
-            </label>
-          </div>
-
-          <label>
-            What's happening?
-            <input id="messageInput" name="message" value="Crowd surge near aisle" maxlength="120" placeholder="Describe the issue" required />
-          </label>
-
-          <label>
-            Note to Organizer <span class="optional">(optional)</span>
-            <textarea id="noteInput" name="note" maxlength="200" rows="2" placeholder="Extra details, injuries, number of people affected..."></textarea>
-          </label>
-
-          <button type="submit" class="send-btn" id="sendBtn">Send Alert Now</button>
-        </form>
-
-        <div id="sendStatus" class="send-status hidden"></div>
-
-        <!-- Recent alerts sent by this user -->
-        <div id="myReports" class="my-reports hidden">
-          <h3>Your Recent Reports</h3>
-          <ul id="myReportsList"></ul>
-        </div>
+        <div class="sub" id="crowdSummary">Crowd pressure summary loading...</div>
+        <div class="sub" id="exitStatus">Exit status loading...</div>
       </section>
 
-      <!-- Safety instructions -->
       <section class="panel instructions-section">
-        <h2>Safety Instructions</h2>
+        <h2>Personal Safety Checklist</h2>
         <ul class="actions" id="safetyInstructions">
-          <li>Move slowly with the crowd, keep hands free, avoid sudden stops.</li>
-          <li>Use side aisles and follow security staff toward open exits.</li>
-          <li>If someone falls nearby, signal staff and create a small buffer.</li>
+          <li>Move with crowd flow and keep hands free.</li>
+          <li>Use side aisles and avoid rail bottlenecks.</li>
+          <li>If someone falls, signal staff and create space.</li>
           <li>Do not push against counter-flow movement.</li>
         </ul>
       </section>
-    </div>
-
+    </section>
   </main>
 
   <script src="/static/attendee.js" defer></script>

@@ -1,151 +1,332 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CrowdShield | Organizer</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hotspot | Command Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css"/>
 </head>
-<body class="view-body">
+<body class="unified-org-body">
 
-  <header class="topbar navy-topbar">
-    <div>
-      <p class="mini">Organizer Command</p>
-      <h1>CrowdShield Command Center</h1>
-      <p id="eventLine">Loading event...</p>
+  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+  <header class="topbar navy-topbar org-header">
+    <div class="org-brand">
+      <div class="brand-live-dot"></div>
+      <span class="brand-name">Hotspot</span>
+      <span class="brand-tag">Command Center</span>
     </div>
-    <div class="header-right">
-      <div class="status-pill" id="phaseLabel">Initializing</div>
-      <div class="quick-metrics" id="metrics"></div>
+
+    <div class="org-event-info">
+      <span id="eventArtist">—</span>
+      <span class="ev-sep">·</span>
+      <span id="eventVenue">Loading event...</span>
+    </div>
+
+    <div class="org-header-stats">
+      <div class="hs-stat">
+        <span class="hs-val" id="hsPeople">—</span>
+        <span class="hs-label">people</span>
+      </div>
+      <div class="hs-divider"></div>
+      <div class="hs-stat">
+        <span class="hs-val" id="hsDensity">—</span>
+        <span class="hs-label">p/m²</span>
+      </div>
+      <div class="hs-divider"></div>
+      <div class="hs-stat">
+        <span class="hs-val risk-val low" id="hsRisk">LOW</span>
+        <span class="hs-label">risk</span>
+      </div>
+    </div>
+
+    <div class="org-header-right">
+      <div class="status-pill" id="phasePill">NORMAL</div>
+      <a href="/attendee" class="attendee-toggle-btn">Attendee View →</a>
     </div>
   </header>
 
-  <main class="layout organizer-layout">
+  <!-- ── 3-COLUMN LAYOUT ───────────────────────────────────────────────── -->
+  <div class="org-layout">
 
-    <!-- Controls -->
-    <section class="panel controls">
-      <h2>Scene Controls</h2>
-      <div class="btn-grid">
-        <button data-action="start" class="ctrl-btn">▶ Auto</button>
-        <button data-action="next" class="ctrl-btn">Next ›</button>
-        <button data-action="back" class="ctrl-btn">‹ Back</button>
-        <button data-action="escalate" class="ctrl-btn warn">⚠ Escalate</button>
-        <button data-action="resolve" class="ctrl-btn ok">✓ Resolve</button>
-        <button data-action="reset" class="ctrl-btn">↺ Reset</button>
-      </div>
-      <div class="tagline" id="tagline"></div>
-
-      <div class="metrics-block" id="metricsBlock">
-        <div class="metric-card" id="mc-reports">
-          <div class="metric-val" id="mv-reports">0</div>
-          <div class="metric-label">Incidents</div>
-        </div>
-        <div class="metric-card danger" id="mc-zones">
-          <div class="metric-val" id="mv-zones">0</div>
-          <div class="metric-label">Critical</div>
-        </div>
-        <div class="metric-card warn" id="mc-user">
-          <div class="metric-val" id="mv-user">0</div>
-          <div class="metric-label">User Reports</div>
-        </div>
-        <div class="metric-card ok" id="mc-medical">
-          <div class="metric-val" id="mv-medical">0</div>
-          <div class="metric-label">Medical</div>
-        </div>
-      </div>
-
-      <div class="ai-block">
-        <h3>AI Recommendations</h3>
-        <ul id="actionsList" class="actions-compact">
-          <li>Loading...</li>
+    <!-- ── LEFT SIDEBAR ───────────────────────────────────────────────── -->
+    <aside class="org-left-panel">
+      <!-- AI Recommendations -->
+      <div class="org-panel-block hide-in-live ai-focus-panel">
+        <div class="opb-title">Incident Commander AI</div>
+        <div id="aiContext" class="ai-context">Assessing live conditions...</div>
+        <ul id="actionsList" class="ai-actions-list">
+          <li class="ai-action-card">Awaiting analysis...</li>
         </ul>
-      </div>
-    </section>
-
-    <!-- Stadium Map -->
-    <section class="panel map-panel">
-      <div class="panel-head">
-        <h2>Live Stadium Map</h2>
-        <p class="sub">Click a zone to inspect. Lights up when a user files a report.</p>
-      </div>
-      <div class="map-wrapper">
-        <svg id="stadiumSVG" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg" class="stadium-svg">
-          <!-- Background -->
-          <rect width="500" height="380" fill="#d6dce8" rx="16"/>
-          <!-- Arena shell -->
-          <circle cx="250" cy="190" r="190" fill="#111d35"/>
-          <!-- 6 zones: A=top, B=top-right, C=bottom-right, D=bottom, E=bottom-left, F=top-left -->
-          <path id="zone-A" class="zone" data-zone="A"
-            d="M 156 27 A 188 188 0 0 1 344 27 L 303 99 A 105 105 0 0 0 197 99 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <path id="zone-B" class="zone" data-zone="B"
-            d="M 344 27 A 188 188 0 0 1 438 190 L 355 190 A 105 105 0 0 0 303 99 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <path id="zone-C" class="zone" data-zone="C"
-            d="M 438 190 A 188 188 0 0 1 344 353 L 303 281 A 105 105 0 0 0 355 190 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <path id="zone-D" class="zone" data-zone="D"
-            d="M 344 353 A 188 188 0 0 1 156 353 L 197 281 A 105 105 0 0 0 303 281 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <path id="zone-E" class="zone" data-zone="E"
-            d="M 156 353 A 188 188 0 0 1 62 190 L 145 190 A 105 105 0 0 0 197 281 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <path id="zone-F" class="zone" data-zone="F"
-            d="M 62 190 A 188 188 0 0 1 156 27 L 197 99 A 105 105 0 0 0 145 190 Z"
-            fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
-          <!-- Row lines -->
-          <circle cx="250" cy="190" r="125" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
-          <circle cx="250" cy="190" r="146" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
-          <circle cx="250" cy="190" r="167" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
-          <!-- Inner floor -->
-          <circle cx="250" cy="190" r="103" fill="#1a2f52"/>
-          <!-- Stage/Court -->
-          <rect x="176" y="128" width="148" height="124" rx="10" fill="#c09040"/>
-          <line x1="176" y1="190" x2="324" y2="190" stroke="#a07830" stroke-width="1.5"/>
-          <ellipse cx="250" cy="190" rx="28" ry="28" fill="none" stroke="#a07830" stroke-width="1.5"/>
-          <text x="250" y="195" text-anchor="middle" fill="#7a5518" font-size="10" font-weight="800" font-family="Barlow,sans-serif">STAGE</text>
-          <!-- Zone labels -->
-          <text x="250" y="50" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">A</text>
-          <text x="377" y="122" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">B</text>
-          <text x="377" y="266" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">C</text>
-          <text x="250" y="338" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">D</text>
-          <text x="123" y="266" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">E</text>
-          <text x="123" y="122" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">F</text>
-          <!-- Dynamic seat markers injected by JS -->
-          <g id="seatMarkers"></g>
-        </svg>
-      </div>
-      <!-- Section detail popup -->
-      <div class="section-popup hidden" id="sectionPopup">
-        <button class="popup-close" id="popupClose">✕</button>
-        <div class="popup-header" id="popupHeader">Zone —</div>
-        <div class="popup-risk" id="popupRisk"></div>
-        <ul class="popup-reports" id="popupReports"></ul>
-      </div>
-    </section>
-
-    <!-- Incident feed -->
-    <section class="panel right-stack">
-      <div class="stack-block feed-block">
-        <div class="feed-head">
-          <h2>Live Incident Feed</h2>
-          <span class="feed-count" id="feedCount">0</span>
+        <div class="pa-panel">
+          <div class="pa-head">
+            <span>Emergency PA</span>
+            <span class="pa-sub">Multilingual voice output</span>
+          </div>
+          <div class="pa-controls">
+            <input id="paLangs" class="pa-langs" type="text" value="en,es,hi" />
+            <button id="btnCheckPA" class="pa-btn">Check + Play</button>
+            <button id="btnForcePA" class="pa-btn ghost">Force Test</button>
+          </div>
+          <div id="paStatus" class="pa-status">Waiting for trigger check...</div>
+          <ul id="paAudioList" class="pa-audio-list"></ul>
         </div>
-        <!-- User reports appear here with highlight -->
-        <div class="user-alerts-banner hidden" id="userAlertsBanner">
-          <span>🔔 New user reports received</span>
-        </div>
-        <ul id="reportsList" class="reports">
-          <li class="report-item">Loading reports...</li>
-        </ul>
       </div>
-    </section>
 
-  </main>
+      <!-- Metric Cards -->
+      <div class="org-panel-block hide-in-live">
+        <div class="opb-title">Live Metrics</div>
+        <div class="metrics-block">
+          <div class="metric-card">
+            <div class="metric-val" id="mv-reports">0</div>
+            <div class="metric-label">Incidents</div>
+          </div>
+          <div class="metric-card danger">
+            <div class="metric-val" id="mv-zones">0</div>
+            <div class="metric-label">Critical</div>
+          </div>
+          <div class="metric-card warn">
+            <div class="metric-val" id="mv-user">0</div>
+            <div class="metric-label">User Reports</div>
+          </div>
+          <div class="metric-card ok">
+            <div class="metric-val" id="mv-medical">0</div>
+            <div class="metric-label">Medical</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Zone Activity -->
+      <div class="org-panel-block hide-in-live">
+        <div class="opb-title">Camera Zone Activity</div>
+        <div id="zone-bars"><!-- injected by JS --></div>
+      </div>
+
+      <!-- Live Event Log -->
+      <div class="org-panel-block hide-in-live org-event-log-block">
+        <div class="opb-title">Live Events</div>
+        <div class="org-event-log" id="event-feed">
+          <div class="no-events" id="no-events">Events appear during live analysis</div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ── CENTER: TABBED PANEL ───────────────────────────────────────── -->
+    <main class="org-center">
+
+      <!-- Tab Bar -->
+      <div class="tab-bar">
+        <button class="tab-btn active" data-tab="map">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+            <line x1="8" y1="2" x2="8" y2="18"/>
+            <line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+          Stadium Map
+        </button>
+        <button class="tab-btn" data-tab="live">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="7" width="15" height="10" rx="2"/>
+            <path d="M17 9l4-2v10l-4-2"/>
+          </svg>
+          Live Command
+        </button>
+        <span class="tab-live-badge hidden" id="tabLiveBadge">● LIVE</span>
+      </div>
+
+      <!-- ── TAB: Stadium Map ── -->
+      <div class="tab-panel active" id="tab-map">
+        <div class="map-tab-inner">
+          <div class="panel map-panel-card">
+            <div class="panel-head">
+              <h2>Live Stadium Map</h2>
+              <p class="sub">Click a zone to inspect. Lights up when user reports arrive.</p>
+            </div>
+            <div class="map-wrapper">
+              <svg id="stadiumSVG" viewBox="0 0 500 380" xmlns="http://www.w3.org/2000/svg" class="stadium-svg">
+                <rect width="500" height="380" fill="#d6dce8" rx="16"/>
+                <circle cx="250" cy="190" r="190" fill="#111d35"/>
+                <path id="zone-A" class="zone" data-zone="A"
+                  d="M 156 27 A 188 188 0 0 1 344 27 L 303 99 A 105 105 0 0 0 197 99 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <path id="zone-B" class="zone" data-zone="B"
+                  d="M 344 27 A 188 188 0 0 1 438 190 L 355 190 A 105 105 0 0 0 303 99 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <path id="zone-C" class="zone" data-zone="C"
+                  d="M 438 190 A 188 188 0 0 1 344 353 L 303 281 A 105 105 0 0 0 355 190 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <path id="zone-D" class="zone" data-zone="D"
+                  d="M 344 353 A 188 188 0 0 1 156 353 L 197 281 A 105 105 0 0 0 303 281 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <path id="zone-E" class="zone" data-zone="E"
+                  d="M 156 353 A 188 188 0 0 1 62 190 L 145 190 A 105 105 0 0 0 197 281 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <path id="zone-F" class="zone" data-zone="F"
+                  d="M 62 190 A 188 188 0 0 1 156 27 L 197 99 A 105 105 0 0 0 145 190 Z"
+                  fill="#1e3a6e" stroke="#111d35" stroke-width="2.5"/>
+                <!-- Row rings -->
+                <circle cx="250" cy="190" r="125" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
+                <circle cx="250" cy="190" r="146" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
+                <circle cx="250" cy="190" r="167" fill="none" stroke="#0e1a30" stroke-width="1" opacity="0.5"/>
+                <!-- Inner floor -->
+                <circle cx="250" cy="190" r="103" fill="#1a2f52"/>
+                <!-- Stage -->
+                <rect x="176" y="128" width="148" height="124" rx="10" fill="#c09040"/>
+                <line x1="176" y1="190" x2="324" y2="190" stroke="#a07830" stroke-width="1.5"/>
+                <ellipse cx="250" cy="190" rx="28" ry="28" fill="none" stroke="#a07830" stroke-width="1.5"/>
+                <text x="250" y="195" text-anchor="middle" fill="#7a5518" font-size="10" font-weight="800" font-family="Barlow,sans-serif">STAGE</text>
+                <!-- Zone labels -->
+                <text x="250" y="50"  text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">A</text>
+                <text x="377" y="122" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">B</text>
+                <text x="377" y="266" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">C</text>
+                <text x="250" y="338" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">D</text>
+                <text x="123" y="266" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">E</text>
+                <text x="123" y="122" text-anchor="middle" fill="rgba(255,255,255,0.55)" font-size="14" font-weight="800" font-family="Barlow,sans-serif">F</text>
+                <!-- Dynamic seat pins injected by JS -->
+                <g id="seatMarkers"></g>
+              </svg>
+            </div>
+            <!-- Zone popup -->
+            <div class="section-popup hidden" id="sectionPopup">
+              <button class="popup-close" id="popupClose">✕</button>
+              <div class="popup-header" id="popupHeader">Zone —</div>
+              <div class="popup-risk" id="popupRisk"></div>
+              <ul class="popup-reports" id="popupReports"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── TAB: Live Command Center ── -->
+      <div class="tab-panel" id="tab-live">
+        <div class="live-panel-inner">
+
+          <!-- Config bar -->
+          <div class="live-top-bar">
+            <div class="live-cfg-group">
+              <span class="live-label">Video Source</span>
+              <input type="file" id="file-input" accept="video/*" class="live-file-input"/>
+            </div>
+            <div class="live-cfg-group">
+              <span class="live-label">Area</span>
+              <div class="live-area-row">
+                <input type="number" id="area-val" value="50" min="1" class="live-num"/>
+                <select id="area-unit" class="live-sel">
+                  <option value="square_meters">m²</option>
+                  <option value="square_feet">ft²</option>
+                </select>
+              </div>
+            </div>
+            <div class="live-cfg-group">
+              <span class="live-label">Alert density (p/m²)</span>
+              <input type="number" id="density-thresh" value="2.5" step="0.1" min="0.5" class="live-num"/>
+            </div>
+            <div class="live-cfg-group">
+              <span class="live-label">Interval (ms)</span>
+              <input type="number" id="interval-ms" value="400" min="100" max="2000" step="100" class="live-num"/>
+            </div>
+            <div class="live-action-group">
+              <button class="live-start-btn" id="btn-start" onclick="startStream()">▶ Start Analysis</button>
+              <button class="live-stop-btn"  id="btn-stop"  onclick="stopStream()" style="display:none">■ Stop</button>
+            </div>
+            <div class="live-status-chip">
+              <span class="dot" id="live-dot"></span>
+              <span id="live-txt">Idle</span>
+            </div>
+          </div>
+
+          <!-- Video + Metrics row -->
+          <div class="live-content-row">
+
+            <!-- Canvas area -->
+            <div class="live-video-area">
+              <div class="live-placeholder" id="placeholder">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+                  <rect x="2" y="7" width="15" height="10" rx="2"/>
+                  <path d="M17 9l4-2v10l-4-2"/>
+                </svg>
+                <p>Select a video file and click Start Analysis</p>
+              </div>
+              <canvas id="main-canvas" style="display:none"></canvas>
+            </div>
+
+            <!-- Dark metrics sidebar -->
+            <div class="live-metrics-side">
+              <div class="lms-section">
+                <div class="lms-title">Risk Assessment</div>
+                <div class="ring-wrap">
+                  <svg class="ring-svg" viewBox="0 0 130 130">
+                    <circle cx="65" cy="65" r="54" fill="none" stroke="#1e2235" stroke-width="11"/>
+                    <circle id="ring-track" cx="65" cy="65" r="54" fill="none"
+                      stroke="#22c55e" stroke-width="11" stroke-linecap="round"
+                      stroke-dasharray="339.3" stroke-dashoffset="339.3"
+                      transform="rotate(-90 65 65)"
+                      style="transition-property:stroke-dashoffset,stroke;transition-duration:.5s,.5s;transition-timing-function:ease,ease"/>
+                    <text id="ring-pct"   x="65" y="61" text-anchor="middle" font-size="26" font-weight="700" fill="#f1f5f9">0%</text>
+                    <text id="ring-level" x="65" y="77" text-anchor="middle" font-size="10" font-weight="600" fill="#64748b">LOW</text>
+                    <text id="ring-sub"   x="65" y="89" text-anchor="middle" font-size="8"  fill="#334155">waiting…</text>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-grid">
+                <div class="stat-box"><div class="sv neutral" id="s-people">—</div><div class="sl">People now</div></div>
+                <div class="stat-box"><div class="sv neutral" id="s-density">—</div><div class="sl">Density/m²</div></div>
+                <div class="stat-box"><div class="sv neutral" id="s-peak">—</div><div class="sl">Peak density</div></div>
+                <div class="stat-box"><div class="sv neutral" id="s-turb">—</div><div class="sl">Turbulence</div></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom stats bar -->
+          <div class="live-bottom-bar">
+            <div class="bstat">
+              <div class="bv" id="b-count">—<span class="delta eq" id="b-delta"></span></div>
+              <div class="bl">People in frame</div>
+            </div>
+            <div class="bstat">
+              <div class="bv ok" id="b-frames">0</div>
+              <div class="bl">Frames sent</div>
+            </div>
+            <div class="bstat">
+              <div class="bv" id="b-time">0:00</div>
+              <div class="bl">Video time</div>
+            </div>
+            <div class="progress-wrap">
+              <div class="progress-label"><span>Density pressure</span><span id="prog-label">0%</span></div>
+              <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%;background:#22c55e"></div></div>
+            </div>
+            <div class="lat" id="lat"></div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ── RIGHT SIDEBAR: Incident Feed ──────────────────────────────── -->
+    <aside class="org-right-panel">
+      <div class="feed-head">
+        <h2>Incident Feed</h2>
+        <span class="feed-count" id="feedCount">0</span>
+      </div>
+      <div class="user-alerts-banner hidden" id="userAlertsBanner">
+        <span>🔔 New user reports received</span>
+      </div>
+      <ul id="reportsList" class="reports">
+        <li class="report-item">Loading reports...</li>
+      </ul>
+    </aside>
+
+  </div><!-- /.org-layout -->
 
   <script src="/static/organizer.js" defer></script>
 </body>
 </html>
+
+
+
+
